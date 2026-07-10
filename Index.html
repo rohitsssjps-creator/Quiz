@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Under the Lens — A Cancer Biology Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0F1B1E;
+    --bg-panel:#16262A;
+    --bg-panel-2:#1C2E32;
+    --paper:#F2EDE1;
+    --paper-2:#EAE3D2;
+    --ink:#1C2321;
+    --ink-soft:#54615D;
+    --line:#D9D0BB;
+
+    --purple:#7C6BA8;
+    --purple-deep:#5C4E82;
+    --pink:#E1637A;
+    --pink-deep:#B9445B;
+    --green:#3FA76C;
+    --green-deep:#2C7C4F;
+    --amber:#D9A441;
+    --amber-deep:#B3822F;
+    --mutant:#E1552F;
+    --mutant-deep:#B23F20;
+
+    --round1:var(--purple);
+    --round2:var(--pink);
+    --round3:var(--green);
+    --round4:var(--amber);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #1E3238 0%, var(--bg-deep) 55%);
+    min-height:100vh;
+    font-family:'Inter',sans-serif;
+    color:var(--paper);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+
+  .scope-frame{
+    width:100%;
+    max-width:640px;
+    background:var(--bg-panel);
+    border-radius:28px;
+    border:1px solid #2A3E42;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .scope-frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 38%, transparent 0%, transparent 55%, rgba(15,27,30,0.35) 100%);
+    z-index:5;
+  }
+
+  header.masthead{
+    padding:28px 30px 18px;
+    text-align:center;
+    border-bottom:1px solid #24393E;
+  }
+  .kicker{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:15px;
+    color:var(--amber);
+    letter-spacing:0.02em;
+    margin:0 0 2px;
+  }
+  h1.title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:30px;
+    line-height:1.15;
+    margin:0 0 6px;
+    color:var(--paper);
+  }
+  .byline{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#7E9A9C;
+    margin:0;
+  }
+
+  /* progress dots */
+  .progress-wrap{
+    padding:16px 26px 8px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .progress-row{
+    display:grid;
+    grid-template-columns:repeat(10, 1fr);
+    gap:5px;
+  }
+  .dot{
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:50%;
+    border:1.5px solid #3A5054;
+    background:transparent;
+    transition:all .25s ease;
+  }
+  .dot.current{
+    border-color:var(--paper);
+    box-shadow:0 0 0 3px rgba(242,237,225,0.12);
+  }
+  .dot.correct{background:var(--green);border-color:var(--green);}
+  .dot.incorrect{background:var(--mutant);border-color:var(--mutant);}
+
+  main{
+    padding:22px 26px 30px;
+    position:relative;
+    z-index:2;
+  }
+
+  /* WELCOME */
+  .welcome-copy{
+    font-size:15px;
+    line-height:1.6;
+    color:#C8D6D4;
+    margin:0 0 22px;
+  }
+  .stat-row{
+    display:flex;
+    gap:10px;
+    margin:18px 0 26px;
+    flex-wrap:wrap;
+  }
+  .stat-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:var(--bg-panel-2);
+    border:1px solid #2A3E42;
+    color:#9FC0BE;
+  }
+
+  /* BUTTONS */
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    padding:14px 26px;
+    border-radius:14px;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    transition:transform .15s ease, filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .btn-round{color:white;}
+
+  /* ROUND INTRO */
+  .round-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:20px;
+    display:inline-block;
+    margin-bottom:14px;
+    color:var(--bg-deep);
+    font-weight:600;
+  }
+  .round-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:26px;
+    margin:0 0 8px;
+    line-height:1.2;
+  }
+  .round-subtitle{
+    color:#B9CBC9;
+    font-size:14.5px;
+    line-height:1.55;
+    margin:0 0 26px;
+  }
+
+  .specimen-row{
+    display:flex;
+    justify-content:center;
+    padding:14px 0 26px;
+  }
+
+  /* QUESTION CARD (paper slide) */
+  .slide{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:18px;
+    padding:24px 22px;
+    position:relative;
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.5);
+  }
+  .slide-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .slide-meta .rd{
+    font-weight:600;
+  }
+  .q-text{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:19px;
+    line-height:1.4;
+    margin:0 0 20px;
+    color:var(--ink);
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .option{
+    text-align:left;
+    background:#FBF9F3;
+    border:1.5px solid var(--line);
+    color:var(--ink);
+    border-radius:12px;
+    padding:13px 16px;
+    font-size:14.5px;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    transition:all .15s ease;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .option:hover:not(.locked){
+    border-color:var(--purple);
+    background:#F5F1FA;
+  }
+  .option .letter{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    width:18px;
+  }
+  .option.selected-correct{
+    background:#E4F5EB;
+    border-color:var(--green);
+  }
+  .option.selected-incorrect{
+    background:#FBE7E1;
+    border-color:var(--mutant);
+  }
+  .option.reveal-correct{
+    background:#E4F5EB;
+    border-color:var(--green);
+  }
+  .option.locked{cursor:default;}
+
+  .feedback{
+    margin-top:18px;
+    padding:16px 18px;
+    border-radius:14px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .feedback.good{background:#E4F5EB;border:1px solid #BFE3CD;}
+  .feedback.bad{background:#FBE7E1;border:1px solid #F0C4B4;}
+  .feedback-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .feedback.good .feedback-label{color:var(--green-deep);}
+  .feedback.bad .feedback-label{color:var(--mutant-deep);}
+  .feedback-text{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink);
+    margin:0;
+  }
+
+  .next-wrap{margin-top:20px;}
+  .btn-next{
+    background:var(--ink);
+    color:var(--paper);
+  }
+
+  /* ROUND COMPLETE */
+  .rc-score{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:44px;
+    text-align:center;
+    margin:6px 0 2px;
+  }
+  .rc-of{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#9FC0BE;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin:0 0 22px;
+  }
+
+  /* FINAL */
+  .final-score{
+    text-align:center;
+    padding:10px 0 6px;
+  }
+  .final-score .num{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:64px;
+    line-height:1;
+    color:var(--paper);
+  }
+  .final-score .denom{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:#9FC0BE;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-top:6px;
+  }
+  .tier{
+    text-align:center;
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:18px;
+    color:var(--amber);
+    margin:10px 0 24px;
+  }
+  .breakdown{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .bd-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .bd-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    width:150px;
+    flex-shrink:0;
+    color:#B9CBC9;
+  }
+  .bd-track{
+    flex:1;
+    height:8px;
+    background:#26383C;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .bd-fill{height:100%;border-radius:6px;}
+  .bd-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--paper);
+    width:38px;
+    text-align:right;
+  }
+
+  .review-toggle{
+    background:transparent;
+    border:1.5px solid #3A5054;
+    color:var(--paper);
+    margin-bottom:14px;
+  }
+  .review-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .review-item{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:14px;
+    padding:16px 18px;
+  }
+  .review-item .rq{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:15px;
+    margin:0 0 8px;
+  }
+  .review-item .ra{
+    font-size:13px;
+    color:var(--green-deep);
+    margin:0 0 6px;
+    font-weight:600;
+  }
+  .review-item .re{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.5;
+  }
+  .review-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    letter-spacing:0.06em;
+    margin-bottom:6px;
+    display:block;
+  }
+  .all-correct{
+    text-align:center;
+    padding:20px;
+    color:#B9CBC9;
+    font-size:14px;
+  }
+
+  /* cell icon */
+  .cell-icon svg{display:block;}
+
+  /* mitosis animation for round complete */
+  .mitosis{
+    width:120px;
+    height:70px;
+    position:relative;
+    margin:0 auto;
+  }
+  .mitosis .lobe{
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    position:absolute;
+    top:7px;
+    animation:split 1.4s ease forwards;
+  }
+  .mitosis .lobe.a{left:32px; background:radial-gradient(circle at 35% 30%, #59C088, var(--green-deep));}
+  .mitosis .lobe.b{left:32px; background:radial-gradient(circle at 35% 30%, #59C088, var(--green-deep)); opacity:0;}
+  @keyframes split{
+    0%{left:32px; opacity:1;}
+    100%{opacity:1;}
+  }
+  .mitosis .lobe.a{animation-name:splitLeft;}
+  .mitosis .lobe.b{animation-name:splitRight;}
+  @keyframes splitLeft{
+    0%{left:32px;}
+    100%{left:4px;}
+  }
+  @keyframes splitRight{
+    0%{left:32px; opacity:0;}
+    30%{opacity:1;}
+    100%{left:60px; opacity:1;}
+  }
+
+  footer.foot{
+    text-align:center;
+    padding:16px 26px 26px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#4E6467;
+  }
+
+  @media (max-width:420px){
+    h1.title{font-size:25px;}
+    .q-text{font-size:17px;}
+    .final-score .num{font-size:52px;}
+  }
+</style>
+</head>
+<body>
+<div class="scope-frame">
+  <header class="masthead">
+    <p class="kicker">Under the Lens</p>
+    <h1 class="title">A Cancer Biology Quiz</h1>
+    <p class="byline">40 Questions · Class 8–10 · Cell Biology</p>
+  </header>
+
+  <div class="progress-wrap" id="progressWrap" style="display:none;">
+    <div class="progress-row" id="row1"></div>
+    <div class="progress-row" id="row2"></div>
+    <div class="progress-row" id="row3"></div>
+    <div class="progress-row" id="row4"></div>
+  </div>
+
+  <main id="app"></main>
+
+  <footer class="foot">Specimen slide · Handle with care</footer>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const ROUNDS = [
+  {id:1, title:"What Is Cancer, Really?", subtitle:"The basics of uncontrolled cell division — where it all starts.", color:"var(--round1)", deep:"var(--purple-deep)"},
+  {id:2, title:"Causes & Risk Factors", subtitle:"What raises the odds — and what genuinely doesn't.", color:"var(--round2)", deep:"var(--pink-deep)"},
+  {id:3, title:"Detection, Treatment & Prevention", subtitle:"Catching it early and understanding how treatment works.", color:"var(--round3)", deep:"var(--green-deep)"},
+  {id:4, title:"Myth or Fact? Rapid Fire", subtitle:"The internet's favourite cancer claims, put under the lens.", color:"var(--round4)", deep:"var(--amber-deep)"}
+];
+
+const Q = [
+  // ROUND 1
+  {round:1, type:"mcq", q:"Cancer is fundamentally a disease of:", options:["Uncontrolled cell division","Cell starvation","Excess cell death","Slowed metabolism"], correct:0, explain:"Cancer arises when cells lose the ability to regulate their own division and multiply without the usual limits."},
+  {round:1, type:"mcq", q:"Which term describes a growth that does NOT invade nearby tissue or spread to other parts of the body?", options:["Malignant tumor","Benign tumor","Metastatic tumor","Carcinoma"], correct:1, explain:"Benign tumors stay localized and don't invade surrounding tissue, unlike malignant tumors."},
+  {round:1, type:"mcq", q:"The process by which cancer spreads from its original site to other parts of the body is called:", options:["Mitosis","Metastasis","Apoptosis","Differentiation"], correct:1, explain:"Metastasis is the spread of cancer cells from the primary tumor to distant sites in the body."},
+  {round:1, type:"mcq", q:"Genes that normally help control cell division, but when mutated can drive cancer, are called:", options:["Tumor suppressor genes","Oncogenes","Housekeeping genes","Homeotic genes"], correct:1, explain:"Proto-oncogenes normally regulate healthy growth; their mutated forms (oncogenes) push cells to divide uncontrollably."},
+  {round:1, type:"mcq", q:"Tumor suppressor genes normally function to:", options:["Speed up cell division","Repair skin cells only","Slow down division or trigger cell death when DNA is damaged","Produce red blood cells"], correct:2, explain:"Genes like p53 act as brakes — they pause division or trigger cell death when DNA damage is detected."},
+  {round:1, type:"mcq", q:"The process of programmed cell death that eliminates damaged cells is called:", options:["Apoptosis","Necrosis","Mitosis","Meiosis"], correct:0, explain:"Apoptosis is the body's built-in 'self-destruct' system for damaged or unwanted cells."},
+  {round:1, type:"mcq", q:"Cancer cells often bypass the normal limit on how many times a cell can divide by manipulating:", options:["Ribosomes","Telomeres","Mitochondria","The Golgi apparatus"], correct:1, explain:"Cancer cells often reactivate telomerase, preventing the telomere shortening that normally limits how many times a cell can divide."},
+  {round:1, type:"mcq", q:"A defining feature of cancer cells is that they:", options:["Respond normally to growth-stopping signals","Ignore signals that would normally stop them from dividing","Cannot divide at all","Only appear in the brain"], correct:1, explain:"Cancer cells lose sensitivity to the signals that tell healthy cells when to stop dividing."},
+  {round:1, type:"mcq", q:"HOTS: If a cell's DNA repair genes are damaged, why does this increase cancer risk?", options:["The cell immediately dies","Mutations accumulate instead of being fixed, raising the chance of a cancer-driving mutation","The cell stops dividing permanently","The cell turns into a red blood cell"], correct:1, explain:"Without working repair genes, errors in DNA pile up over time rather than being corrected — and eventually one may hit a gene that controls growth."},
+  {round:1, type:"mcq", q:"HOTS: Why is a mutation in a tumor suppressor gene often more dangerous when it affects BOTH copies (alleles) rather than just one?", options:["One working copy is usually enough to still suppress tumors","Both copies always mutate at exactly the same moment","One copy only controls hair colour","It has no real effect either way"], correct:0, explain:"This is the 'two-hit hypothesis': one functional copy of a tumor suppressor gene is usually enough to keep working, so both copies typically need to fail before control is lost."},
+
+  // ROUND 2
+  {round:2, type:"mcq", q:"Substances or agents known to cause cancer are called:", options:["Carcinogens","Antigens","Probiotics","Enzymes"], correct:0, explain:"Carcinogens are substances or exposures — chemical, physical, or biological — that can lead to cancer."},
+  {round:2, type:"mcq", q:"Which type of radiation from sunlight is most strongly linked to skin cancer?", options:["Infrared","Ultraviolet (UV)","Radio waves","Visible light"], correct:1, explain:"UV radiation damages DNA in skin cells, and repeated exposure raises the risk of mutations that can lead to skin cancer."},
+  {round:2, type:"mcq", q:"Which habit is the single largest preventable risk factor for cancer worldwide?", options:["Tobacco use","Drinking coffee","Eating spicy food","Using a mobile phone"], correct:0, explain:"Tobacco use is linked to multiple cancer types and remains the leading preventable cause globally."},
+  {round:2, type:"mcq", q:"A cancer risk factor that is passed down from parents is considered:", options:["Environmental","Genetic","Viral","Accidental"], correct:1, explain:"Inherited mutations passed from parent to child are classified as a genetic risk factor."},
+  {round:2, type:"mcq", q:"Which virus is strongly linked to cervical cancer?", options:["Influenza virus","Human papillomavirus (HPV)","Common cold virus","Rotavirus"], correct:1, explain:"Persistent infection with certain strains of HPV is a major cause of cervical cancer."},
+  {round:2, type:"mcq", q:"Chronic infection with which virus increases the risk of liver cancer?", options:["Hepatitis B or C virus","Rhinovirus","Herpes simplex virus","Poliovirus"], correct:0, explain:"Long-term Hepatitis B or C infection can cause ongoing liver damage that raises liver cancer risk."},
+  {round:2, type:"mcq", q:"Which lifestyle factor is linked to a higher risk of colorectal cancer?", options:["High intake of fruits and vegetables","Regular physical activity","High consumption of processed and red meat","Drinking plenty of water"], correct:2, explain:"Diets high in processed and red meat are associated with increased colorectal cancer risk."},
+  {round:2, type:"mcq", q:"HOTS: Why does UV exposure specifically damage skin cells rather than cells deep inside the body?", options:["UV rays cannot penetrate beyond the outer layers of skin","UV rays only affect blood cells","Skin cells are immune to radiation","UV rays target only bone cells"], correct:0, explain:"UV radiation has limited penetrating power, so it directly damages DNA mainly in the skin cells it actually reaches."},
+  {round:2, type:"mcq", q:"HOTS: Why does long-term smoking raise lung cancer risk progressively, rather than the damage being random?", options:["Repeated chemical exposure causes repeated DNA damage in the same tissue, raising the odds a cancer-driving mutation accumulates","Smoke has no interaction with lung cells","Lungs regenerate too fast to ever be affected","Cancer risk never depends on how long you're exposed"], correct:0, explain:"Repeated exposure means repeated chances for DNA damage in the same cells — over years, this raises the odds that a critical mutation builds up."},
+  {round:2, type:"mcq", q:"Which of these is a genetic risk factor associated with notably higher risk of breast and ovarian cancer?", options:["BRCA1/BRCA2 gene mutations","Blood type O","Lactose intolerance","A colourblindness gene"], correct:0, explain:"Inherited mutations in BRCA1 or BRCA2 significantly raise the lifetime risk of breast and ovarian cancer."},
+
+  // ROUND 3
+  {round:3, type:"mcq", q:"Regular self-exams and screening tests are important mainly because they help:", options:["Cure cancer instantly","Detect cancer early, when treatment is often more effective","Prevent all cancers completely","Replace the need for treatment"], correct:1, explain:"Early detection often means smaller, more treatable tumors and a wider range of treatment options."},
+  {round:3, type:"mcq", q:"Which imaging technique is commonly used to screen for breast cancer?", options:["Mammography","Electrocardiogram (ECG)","Spirometry","Audiometry"], correct:0, explain:"Mammography uses low-dose X-rays to detect changes in breast tissue, often before a lump can be felt."},
+  {round:3, type:"mcq", q:"Chemotherapy works mainly by:", options:["Targeting rapidly dividing cells throughout the body","Only affecting the skin","Boosting cell division","Replacing damaged DNA directly"], correct:0, explain:"Chemotherapy drugs target fast-dividing cells — which is why cancer cells are affected, but so are some healthy fast-dividing cells like hair follicles."},
+  {round:3, type:"mcq", q:"Radiation therapy treats cancer by:", options:["Strengthening the immune system only","Damaging the DNA of cancer cells to stop them from dividing","Removing tumors surgically","Increasing blood cell production"], correct:1, explain:"Radiation therapy damages the DNA of targeted cells, stopping them from dividing and eventually causing them to die."},
+  {round:3, type:"mcq", q:"Immunotherapy works by:", options:["Directly poisoning all dividing cells","Helping the patient's own immune system recognise and attack cancer cells","Sealing off the tumor with radiation","Replacing damaged organs"], correct:1, explain:"Immunotherapy boosts or redirects the immune system so it can better identify and destroy cancer cells."},
+  {round:3, type:"mcq", q:"Which of these is a well-known early warning sign doctors advise people to watch for?", options:["A sore that doesn't heal, or an unusual lump","Occasional sneezing","A mild headache after exercise","Feeling hungry in the morning"], correct:0, explain:"Persistent sores, unusual lumps, and unexplained changes in the body are among the classic warning signs worth getting checked."},
+  {round:3, type:"mcq", q:"A biopsy is performed mainly to:", options:["Remove an entire organ","Examine a tissue sample to check for cancerous cells","Measure blood pressure","Replace damaged tissue"], correct:1, explain:"A biopsy involves taking a small tissue sample and examining it under a microscope to confirm whether cancer is present."},
+  {round:3, type:"mcq", q:"Which of these is a proven cancer-prevention strategy recommended by health organisations?", options:["Avoiding all sunlight completely","Not eating any food for long periods","Avoiding tobacco, maintaining a healthy diet and weight, and regular exercise","Taking random supplements daily"], correct:2, explain:"A combination of avoiding tobacco, eating well, staying active, and maintaining a healthy weight is consistently linked to lower cancer risk."},
+  {round:3, type:"mcq", q:"HOTS: Why might combining chemotherapy with radiation therapy sometimes be more effective than using just one treatment?", options:["They attack cancer cells through different mechanisms, increasing the chance of killing more cells and reducing resistance","Combining treatments always doubles side effects for no benefit","Only one form of treatment can ever work at a time","Radiation cancels out chemotherapy"], correct:0, explain:"Different treatments attack cancer cells in different ways, so combining them can be more effective and can help overcome resistance to a single method."},
+  {round:3, type:"mcq", q:"HOTS: Why do doctors emphasise regular screening even for people with no symptoms?", options:["Cancer is only dangerous once symptoms appear","Some cancers grow silently for years before causing noticeable symptoms, so early detection improves outcomes","Screening itself causes cancer","Symptoms always appear immediately when cancer starts"], correct:1, explain:"Many cancers develop silently for a long time. Screening can catch them before symptoms appear, when treatment tends to work best."},
+
+  // ROUND 4 - Myth or Fact
+  {round:4, type:"tf", q:"Cancer is contagious and can spread from person to person through casual contact.", options:["Fact","Myth"], correct:1, explain:"Cancer itself does not spread between people through everyday contact — though a few viruses linked to certain cancers can spread."},
+  {round:4, type:"tf", q:"Sugar directly 'feeds' cancer cells more than it feeds normal cells, so avoiding sugar alone cures cancer.", options:["Fact","Myth"], correct:1, explain:"All cells, including healthy ones, use glucose for energy. There's no solid evidence that cutting out sugar alone stops or cures cancer."},
+  {round:4, type:"tf", q:"All cancers are directly inherited from parents.", options:["Fact","Myth"], correct:1, explain:"Most cancers result from a mix of environmental exposures and mutations acquired during life — only a minority are strongly hereditary."},
+  {round:4, type:"tf", q:"Mobile phones have been scientifically proven to cause brain cancer.", options:["Fact","Myth"], correct:1, explain:"Large studies so far have not found consistent evidence that mobile phone radiation causes cancer."},
+  {round:4, type:"tf", q:"Not all lumps or tumors are cancerous.", options:["Fact","Myth"], correct:0, explain:"Benign tumors are non-cancerous growths — they don't invade nearby tissue or spread to other parts of the body."},
+  {round:4, type:"tf", q:"HeLa cells, among the first 'immortal' human cell lines used in research, were originally taken from a cervical cancer patient.", options:["Fact","Myth"], correct:0, explain:"HeLa cells came from Henrietta Lacks's cervical cancer cells in 1951 and have been used in research worldwide ever since."},
+  {round:4, type:"tf", q:"A healthy diet and regular exercise can help lower the risk of developing several types of cancer.", options:["Fact","Myth"], correct:0, explain:"Diet, activity level, and weight management are all linked to cancer risk for several cancer types."},
+  {round:4, type:"tf", q:"Cancer survival rates have improved significantly over the past several decades due to advances in detection and treatment.", options:["Fact","Myth"], correct:0, explain:"Earlier detection and better treatments have steadily improved survival rates for many cancer types over time."},
+  {round:4, type:"tf", q:"Only elderly people can get cancer — children and young adults are never affected.", options:["Fact","Myth"], correct:1, explain:"While risk rises with age, cancer can affect people of any age — leukemia, for instance, is one of the more common childhood cancers."},
+  {round:4, type:"tf", q:"Alternative remedies alone, with no conventional medical treatment, have been scientifically proven to cure cancer.", options:["Fact","Myth"], correct:1, explain:"No alternative-only remedy has been scientifically proven to cure cancer — evidence-based treatment remains essential."}
+];
+
+const TOTAL = Q.length;
+
+/* ---------- STATE ---------- */
+let stage = "welcome"; // welcome | roundintro | question | roundcomplete | final
+let idx = 0; // 0-39
+let answers = new Array(TOTAL).fill(null);
+let showReview = false;
+
+/* ---------- HELPERS ---------- */
+function roundOf(i){ return Math.floor(i/10); } // 0-3
+function roundMeta(i){ return ROUNDS[roundOf(i)]; }
+function scoreOfRound(r){
+  let s=0;
+  for(let i=r*10;i<r*10+10;i++){ if(answers[i]===Q[i].correct) s++; }
+  return s;
+}
+function totalScore(){
+  return answers.reduce((acc,a,i)=> acc + (a===Q[i].correct?1:0), 0);
+}
+function tierFor(score){
+  if(score>=36) return "Oncology Expert";
+  if(score>=28) return "Cell Biologist";
+  if(score>=20) return "Junior Researcher";
+  return "Lab Trainee";
+}
+
+function cellIcon(state){
+  const colors = state==="healthy" ? ["#59C088","var(--green-deep)"] : state==="mutant" ? ["#F0916F","var(--mutant-deep)"] : ["#B7A8D8","var(--purple-deep)"];
+  return `<div class="cell-icon"><svg width="46" height="46" viewBox="0 0 46 46">
+    <circle cx="23" cy="23" r="20" fill="${colors[0]}" opacity="0.85"/>
+    <circle cx="19" cy="19" r="6" fill="${colors[1]}"/>
+    <circle cx="30" cy="27" r="3" fill="${colors[1]}" opacity="0.6"/>
+    <circle cx="14" cy="29" r="2.5" fill="${colors[1]}" opacity="0.6"/>
+  </svg></div>`;
+}
+
+function renderProgress(){
+  const wrap = document.getElementById("progressWrap");
+  if(stage==="welcome"){ wrap.style.display="none"; return; }
+  wrap.style.display="flex";
+  for(let r=0;r<4;r++){
+    const row = document.getElementById("row"+(r+1));
+    row.innerHTML = "";
+    for(let c=0;c<10;c++){
+      const i = r*10+c;
+      const d = document.createElement("div");
+      d.className = "dot";
+      if(answers[i]!==null){
+        d.classList.add(answers[i]===Q[i].correct ? "correct" : "incorrect");
+      } else if(i===idx && stage==="question"){
+        d.classList.add("current");
+      }
+      row.appendChild(d);
+    }
+  }
+}
+
+/* ---------- RENDER FUNCTIONS ---------- */
+function renderWelcome(){
+  return `
+    <p class="welcome-copy">Forty questions across four rounds take you from the basic biology of a rogue cell, through real-world risk factors, into detection and treatment — before a rapid-fire round busts the myths that circulate online. Answer as you go and get an explanation with every question.</p>
+    <div class="stat-row">
+      <div class="stat-chip">40 questions</div>
+      <div class="stat-chip">4 rounds</div>
+      <div class="stat-chip">MCQ + True/False</div>
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()">Begin Quiz</button>
+  `;
+}
+
+function renderRoundIntro(){
+  const r = ROUNDS[roundOf(idx)];
+  return `
+    <span class="round-badge" style="background:${r.color}">Round ${r.id} of 4</span>
+    <h2 class="round-title">${r.title}</h2>
+    <p class="round-subtitle">${r.subtitle}</p>
+    <div class="specimen-row">${cellIcon("neutral")}</div>
+    <button class="btn btn-round" style="background:${r.deep}" onclick="beginRound()">Begin Round ${r.id}</button>
+  `;
+}
+
+function renderQuestion(){
+  const q = Q[idx];
+  const r = roundMeta(idx);
+  const answered = answers[idx] !== null;
+  const letters = q.type==="tf" ? ["F","M"] : ["A","B","C","D"];
+
+  let optionsHtml = q.options.map((opt,i)=>{
+    let cls = "option";
+    if(answered){
+      cls += " locked";
+      if(i===q.correct) cls += " reveal-correct";
+      else if(i===answers[idx]) cls += " selected-incorrect";
+    }
+    return `<button class="${cls}" ${answered?"disabled":""} onclick="selectAnswer(${i})">
+      <span class="letter">${letters[i]}</span><span>${opt}</span>
+    </button>`;
+  }).join("");
+
+  let feedbackHtml = "";
+  if(answered){
+    const isCorrect = answers[idx]===q.correct;
+    feedbackHtml = `
+      <div class="feedback ${isCorrect?'good':'bad'}">
+        ${cellIcon(isCorrect?'healthy':'mutant')}
+        <div>
+          <p class="feedback-label">${isCorrect? "Correct" : "Not quite"}</p>
+          <p class="feedback-text">${q.explain}</p>
+        </div>
+      </div>
+      <div class="next-wrap">
+        <button class="btn btn-next" onclick="nextQuestion()">${idx===TOTAL-1 ? "See Results" : (idx%10===9 ? "Finish Round" : "Next Question")}</button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="slide">
+      <div class="slide-meta">
+        <span class="rd" style="color:${r.color}">Round ${r.id} · ${r.title}</span>
+        <span>Q${String(idx+1).padStart(2,'0')} / ${TOTAL}</span>
+      </div>
+      <p class="q-text">${q.q}</p>
+      <div class="options">${optionsHtml}</div>
+      ${feedbackHtml}
+    </div>
+  `;
+}
+
+function renderRoundComplete(){
+  const r = roundOf(idx); // just-finished round index
+  const meta = ROUNDS[r];
+  const s = scoreOfRound(r);
+  return `
+    <span class="round-badge" style="background:${meta.color}">Round ${meta.id} Complete</span>
+    <div class="mitosis"><div class="lobe a"></div><div class="lobe b"></div></div>
+    <p class="rc-score">${s} / 10</p>
+    <p class="rc-of">correct in "${meta.title}"</p>
+    <button class="btn btn-round" style="background:${meta.deep}" onclick="continueAfterRound()">${r<3 ? "Continue to Round "+(r+2) : "See Final Results"}</button>
+  `;
+}
+
+function renderFinal(){
+  const total = totalScore();
+  const tier = tierFor(total);
+  const pct = Math.round((total/TOTAL)*100);
+
+  let breakdown = ROUNDS.map((r,i)=>{
+    const s = scoreOfRound(i);
+    return `
+      <div class="bd-row">
+        <div class="bd-label">${r.title}</div>
+        <div class="bd-track"><div class="bd-fill" style="width:${(s/10)*100}%; background:${r.color};"></div></div>
+        <div class="bd-count">${s}/10</div>
+      </div>
+    `;
+  }).join("");
+
+  const missed = Q.map((q,i)=>({q,i})).filter(({q,i})=> answers[i]!==q.correct);
+  let reviewHtml;
+  if(missed.length===0){
+    reviewHtml = `<div class="all-correct">Perfect run — every question answered correctly. Nothing to review!</div>`;
+  } else {
+    reviewHtml = missed.map(({q,i})=>`
+      <div class="review-item">
+        <span class="review-tag">Round ${q.round} · Q${i+1}</span>
+        <p class="rq">${q.q}</p>
+        <p class="ra">Correct answer: ${q.options[q.correct]}</p>
+        <p class="re">${q.explain}</p>
+      </div>
+    `).join("");
+  }
+
+  return `
+    <div class="final-score">
+      <div class="num">${total}</div>
+      <div class="denom">out of ${TOTAL} correct · ${pct}%</div>
+    </div>
+    <p class="tier">${tier}</p>
+    <div class="breakdown">${breakdown}</div>
+    <button class="btn review-toggle" onclick="toggleReview()">${showReview ? "Hide" : "Show"} Missed Questions (${missed.length})</button>
+    ${showReview ? `<div class="review-list">${reviewHtml}</div>` : ""}
+    <button class="btn btn-primary" onclick="retake()">Retake Quiz</button>
+  `;
+}
+
+/* ---------- ACTIONS ---------- */
+function startQuiz(){
+  stage = "roundintro";
+  idx = 0;
+  render();
+}
+function beginRound(){
+  stage = "question";
+  render();
+}
+function selectAnswer(i){
+  if(answers[idx]!==null) return;
+  answers[idx] = i;
+  render();
+}
+function nextQuestion(){
+  if(idx===TOTAL-1){
+    stage = "final";
+    render();
+    return;
+  }
+  if(idx%10===9){
+    stage = "roundcomplete";
+    render();
+    return;
+  }
+  idx++;
+  stage = "question";
+  render();
+}
+function continueAfterRound(){
+  if(idx===TOTAL-1){
+    stage = "final";
+  } else {
+    idx++;
+    stage = "roundintro";
+  }
+  render();
+}
+function toggleReview(){
+  showReview = !showReview;
+  render();
+}
+function retake(){
+  idx=0;
+  answers = new Array(TOTAL).fill(null);
+  showReview = false;
+  stage = "welcome";
+  render();
+}
+
+/* ---------- MAIN RENDER ---------- */
+function render(){
+  const app = document.getElementById("app");
+  if(stage==="welcome") app.innerHTML = renderWelcome();
+  else if(stage==="roundintro") app.innerHTML = renderRoundIntro();
+  else if(stage==="question") app.innerHTML = renderQuestion();
+  else if(stage==="roundcomplete") app.innerHTML = renderRoundComplete();
+  else if(stage==="final") app.innerHTML = renderFinal();
+  renderProgress();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+render();
+</script>
+</body>
+</html>
